@@ -1,0 +1,16 @@
+project_id         = "your-service-project-id"
+network_project_id = "your-shared-vpc-host-project-id"
+network_name       = "shared-vpc-name"
+subnetwork_name    = "shared-subnet-name"
+subnetwork_region  = "me-west1"
+vm_image_project_id = "external-image-project-id"
+vm_image_name       = "source-image-name"
+
+existing_group_email = "existing-group@example.com"
+existing_group_project_roles = [
+  "roles/compute.viewer",
+  "roles/cloudsql.client"
+]
+existing_group_bucket_roles = [
+  "roles/storage.objectViewer"
+]

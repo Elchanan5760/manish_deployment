@@ -1,0 +1,73 @@
+variable "project_id" {
+  description = "GCP project ID."
+  type        = string
+}
+
+variable "name" {
+  description = "VM instance name."
+  type        = string
+}
+
+variable "zone" {
+  description = "VM zone."
+  type        = string
+}
+
+variable "machine_type" {
+  description = "VM machine type."
+  type        = string
+}
+
+variable "network_id" {
+  description = "VPC network self link or ID."
+  type        = string
+}
+
+variable "subnetwork_id" {
+  description = "Subnetwork self link. Use this for Shared VPC subnet attachment."
+  type        = string
+  default     = null
+}
+
+variable "source_image" {
+  description = "Source image self link."
+  type        = string
+}
+
+variable "boot_disk_size_gb" {
+  description = "Boot disk size in GB."
+  type        = number
+}
+
+variable "boot_disk_type" {
+  description = "Boot disk type."
+  type        = string
+}
+
+variable "assign_public_ip" {
+  description = "Whether to attach an ephemeral public IP."
+  type        = bool
+}
+
+variable "tags" {
+  description = "Network tags."
+  type        = list(string)
+  default     = []
+}
+
+variable "labels" {
+  description = "Labels."
+  type        = map(string)
+  default     = {}
+}
+
+variable "service_account_email" {
+  description = "Service account email. Null uses the Compute Engine default service account."
+  type        = string
+  default     = null
+}
+
+variable "service_account_scopes" {
+  description = "OAuth scopes for the VM service account."
+  type        = list(string)
+}
