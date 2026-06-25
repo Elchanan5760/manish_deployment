@@ -13,20 +13,13 @@ variable "instance_name" {
   type        = string
 }
 
-variable "database_name" {
-  description = "Initial database name."
-  type        = string
-}
-
-variable "admin_user_name" {
-  description = "Admin application user name."
-  type        = string
-}
-
-variable "admin_user_password" {
-  description = "Admin application user password."
-  type        = string
-  sensitive   = true
+variable "databases" {
+  description = "Databases and users to create in the Cloud SQL instance."
+  type = map(object({
+    database_name = string
+    user_name     = string
+    password      = string
+  }))
 }
 
 variable "database_version" {

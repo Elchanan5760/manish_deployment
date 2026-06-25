@@ -52,17 +52,19 @@ resource "google_sql_database_instance" "this" {
   }
 }
 
-# Database where PostGIS will be enabled from the root module.
 resource "google_sql_database" "this" {
+  for_each = var.databases
+
   project  = var.project_id
-  name     = var.database_name
+  name     = each.value.database_name
   instance = google_sql_database_instance.this.name
 }
 
-# SQL user used by the PostgreSQL provider to create the PostGIS extension.
-resource "google_sql_user" "admin" {
+resource "google_sql_user" "this" {
+  for_each = var.databases
+
   project  = var.project_id
-  name     = var.admin_user_name
+  name     = each.value.user_name
   instance = google_sql_database_instance.this.name
-  password = var.admin_user_password
+  password = each.value.password
 }

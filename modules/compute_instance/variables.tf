@@ -44,6 +44,12 @@ variable "boot_disk_type" {
   type        = string
 }
 
+variable "boot_disk_auto_delete" {
+  description = "Whether to delete the boot disk when deleting the VM."
+  type        = bool
+  default     = true
+}
+
 variable "assign_public_ip" {
   description = "Whether to attach an ephemeral public IP."
   type        = bool
@@ -61,6 +67,18 @@ variable "labels" {
   default     = {}
 }
 
+variable "metadata" {
+  description = "Instance metadata."
+  type        = map(string)
+  default     = {}
+}
+
+variable "deletion_protection" {
+  description = "Whether deletion protection is enabled for the VM."
+  type        = bool
+  default     = false
+}
+
 variable "service_account_email" {
   description = "Service account email. Null uses the Compute Engine default service account."
   type        = string
@@ -70,4 +88,28 @@ variable "service_account_email" {
 variable "service_account_scopes" {
   description = "OAuth scopes for the VM service account."
   type        = list(string)
+}
+
+variable "automatic_restart" {
+  description = "Whether the VM automatically restarts after host errors."
+  type        = bool
+  default     = true
+}
+
+variable "on_host_maintenance" {
+  description = "Maintenance behavior for standard VMs."
+  type        = string
+  default     = "MIGRATE"
+}
+
+variable "preemptible" {
+  description = "Whether the VM is preemptible."
+  type        = bool
+  default     = false
+}
+
+variable "provisioning_model" {
+  description = "VM provisioning model."
+  type        = string
+  default     = "STANDARD"
 }

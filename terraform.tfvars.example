@@ -1,10 +1,22 @@
 project_id         = "your-service-project-id"
 network_project_id = "your-shared-vpc-host-project-id"
-network_name       = "shared-vpc-name"
-subnetwork_name    = "shared-subnet-name"
+private_network_id = "projects/your-shared-vpc-host-project-id/global/networks/shared-vpc-name"
+subnetwork_id      = "projects/your-shared-vpc-host-project-id/regions/me-west1/subnetworks/shared-subnet-name"
 subnetwork_region  = "me-west1"
-vm_image_project_id = "external-image-project-id"
-vm_image_name       = "source-image-name"
+vm_name            = "your-target-vm-name"
+
+db_databases = {
+  main = {
+    database_name = "app"
+    user_name     = "app"
+    secret_id     = "app-db-password"
+  }
+  secondary = {
+    database_name = "app_secondary"
+    user_name     = "app_secondary"
+    secret_id     = "app-secondary-db-password"
+  }
+}
 
 existing_group_email = "existing-group@example.com"
 existing_group_project_roles = [

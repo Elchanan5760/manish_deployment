@@ -15,16 +15,14 @@ variable "network_project_id" {
   default     = null
 }
 
-variable "network_name" {
-  description = "Shared VPC network name used by Cloud SQL private IP and the VM."
+variable "private_network_id" {
   type        = string
-  default     = "default"
+  description = "Full network ID of the Shared VPC. E.g. projects/hrz-manish-net-0/global/networks/manish-0"
 }
 
-variable "subnetwork_name" {
-  description = "Shared VPC subnetwork name for the VM. Set this when using Shared VPC."
+variable "subnetwork_id" {
   type        = string
-  default     = null
+  description = "Full subnetwork self_link. E.g. projects/hrz-manish-net-0/regions/me-west1/subnetworks/manish-subnet-0"
 }
 
 variable "subnetwork_region" {
@@ -39,23 +37,35 @@ variable "db_instance_name" {
   default     = "manish-postgres"
 }
 
-variable "db_name" {
-  description = "Initial PostgreSQL database name where PostGIS will be enabled."
-  type        = string
-  default     = "app"
+variable "db_databases" {
+  description = "Databases and users to create. Each password is generated unless explicitly provided, and is stored in Secret Manager."
+  type = map(object({
+    database_name = string
+    user_name     = string
+    password      = optional(string)
+    secret_id     = optional(string)
+  }))
+  default = {
+    main = {
+      database_name = "app"
+      user_name     = "app"
+    }
+    secondary = {
+      database_name = "app_secondary"
+      user_name     = "app_secondary"
+    }
+  }
 }
 
-variable "db_admin_user" {
-  description = "Cloud SQL PostgreSQL user used by Terraform to enable extensions. Use postgres or another role allowed to create extensions."
+variable "db_provider_database_key" {
+  description = "Key from db_databases used by the PostgreSQL provider."
   type        = string
-  default     = "postgres"
-}
+  default     = "main"
 
-variable "db_admin_password" {
-  description = "Password for db_admin_user. Leave null to generate one automatically."
-  type        = string
-  default     = null
-  sensitive   = true
+  validation {
+    condition     = contains(keys(var.db_databases), var.db_provider_database_key)
+    error_message = "db_provider_database_key must be one of the keys in db_databases."
+  }
 }
 
 variable "db_tier" {
@@ -115,27 +125,26 @@ variable "enable_project_services" {
 }
 
 variable "vm_name" {
-  description = "Compute Engine VM instance name."
+  description = "Compute Engine VM instance name. Set per project/environment; this is intentionally not derived from the source VM."
   type        = string
-  default     = "manish-vm"
 }
 
 variable "vm_zone" {
   description = "Compute Engine zone for the VM."
   type        = string
-  default     = "me-west1-a"
+  default     = "me-west1-c"
 }
 
 variable "vm_machine_type" {
   description = "Compute Engine machine type for the VM."
   type        = string
-  default     = "e2-standard-4"
+  default     = "e2-standard-8"
 }
 
 variable "vm_boot_disk_size_gb" {
   description = "Boot disk size in GB."
   type        = number
-  default     = 100
+  default     = 500
 }
 
 variable "vm_boot_disk_type" {
@@ -144,15 +153,16 @@ variable "vm_boot_disk_type" {
   default     = "pd-balanced"
 }
 
-variable "vm_image_project_id" {
-  description = "Project ID that owns the source VM image, even when it belongs to another organization. The Terraform identity must be allowed to use it."
-  type        = string
+variable "vm_boot_disk_auto_delete" {
+  description = "Whether to delete the boot disk when deleting the VM."
+  type        = bool
+  default     = true
 }
 
 variable "vm_image_name" {
-  description = "Exact source image name. Leave null when using vm_image_family."
+  description = "Exact source image self link or project image path."
   type        = string
-  default     = null
+  default     = "projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20250508"
 }
 
 variable "vm_image_family" {
@@ -170,13 +180,28 @@ variable "vm_assign_public_ip" {
 variable "vm_tags" {
   description = "Network tags for the VM."
   type        = list(string)
-  default     = []
+  default     = ["allow-internet"]
 }
 
 variable "vm_labels" {
   description = "Labels for the VM."
   type        = map(string)
   default     = {}
+}
+
+variable "vm_metadata" {
+  description = "Metadata for OS Login and OS Config."
+  type        = map(string)
+  default = {
+    enable-osconfig = "TRUE"
+    enable-oslogin  = "true"
+  }
+}
+
+variable "vm_deletion_protection" {
+  description = "Whether deletion protection is enabled for the VM."
+  type        = bool
+  default     = false
 }
 
 variable "vm_service_account_email" {
@@ -189,6 +214,30 @@ variable "vm_service_account_scopes" {
   description = "OAuth scopes for the VM service account."
   type        = list(string)
   default     = ["https://www.googleapis.com/auth/cloud-platform"]
+}
+
+variable "vm_automatic_restart" {
+  description = "Whether the VM automatically restarts after host errors."
+  type        = bool
+  default     = true
+}
+
+variable "vm_on_host_maintenance" {
+  description = "Maintenance behavior for standard VMs."
+  type        = string
+  default     = "MIGRATE"
+}
+
+variable "vm_preemptible" {
+  description = "Whether the VM is preemptible."
+  type        = bool
+  default     = false
+}
+
+variable "vm_provisioning_model" {
+  description = "VM provisioning model."
+  type        = string
+  default     = "STANDARD"
 }
 
 variable "existing_group_email" {

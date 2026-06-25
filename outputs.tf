@@ -18,28 +18,43 @@ output "cloud_sql_private_ip_address" {
   value       = module.postgres.private_ip_address
 }
 
-output "db_admin_password" {
-  description = "Generated or provided Cloud SQL admin password."
-  value       = local.db_admin_password
+output "database_names" {
+  description = "Cloud SQL database names by key."
+  value       = module.postgres.database_names
+}
+
+output "database_user_names" {
+  description = "Cloud SQL user names by key."
+  value       = module.postgres.user_names
+}
+
+output "database_password_secret_ids" {
+  description = "Secret Manager secret IDs for database passwords by key."
+  value       = { for key, secret in google_secret_manager_secret.db_password : key => secret.secret_id }
+}
+
+output "database_passwords" {
+  description = "Generated or provided Cloud SQL database passwords by key."
+  value       = local.db_passwords
   sensitive   = true
 }
 
-output "vm_name" {
-  description = "Compute Engine VM instance name."
-  value       = module.vm.name
-}
+# output "vm_name" {
+#   description = "Compute Engine VM instance name."
+#   value       = module.vm.name
+# }
 
-output "vm_self_link" {
-  description = "Compute Engine VM self link."
-  value       = module.vm.self_link
-}
+# output "vm_self_link" {
+#   description = "Compute Engine VM self link."
+#   value       = module.vm.self_link
+# }
 
-output "vm_internal_ip" {
-  description = "Compute Engine VM internal IP address."
-  value       = module.vm.internal_ip
-}
+# output "vm_internal_ip" {
+#   description = "Compute Engine VM internal IP address."
+#   value       = module.vm.internal_ip
+# }
 
-output "vm_external_ip" {
-  description = "Compute Engine VM external IP address, if enabled."
-  value       = module.vm.external_ip
-}
+# output "vm_external_ip" {
+#   description = "Compute Engine VM external IP address, if enabled."
+#   value       = module.vm.external_ip
+# }

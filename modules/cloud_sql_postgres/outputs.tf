@@ -8,14 +8,14 @@ output "connection_name" {
   value       = google_sql_database_instance.this.connection_name
 }
 
-output "database_name" {
-  description = "Database name."
-  value       = google_sql_database.this.name
+output "database_names" {
+  description = "Database names by key."
+  value       = { for key, database in google_sql_database.this : key => database.name }
 }
 
-output "admin_user_name" {
-  description = "Admin user name."
-  value       = google_sql_user.admin.name
+output "user_names" {
+  description = "SQL user names by key."
+  value       = { for key, user in google_sql_user.this : key => user.name }
 }
 
 output "private_ip_address" {
@@ -32,4 +32,3 @@ output "connection_host" {
   description = "Host used by the PostgreSQL provider."
   value       = var.enable_public_ip ? google_sql_database_instance.this.public_ip_address : google_sql_database_instance.this.private_ip_address
 }
-

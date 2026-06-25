@@ -13,9 +13,9 @@ provider "google-beta" {
 provider "postgresql" {
   host            = module.postgres.connection_host
   port            = 5432
-  database        = module.postgres.database_name
-  username        = module.postgres.admin_user_name
-  password        = local.db_admin_password
+  database        = module.postgres.database_names[var.db_provider_database_key]
+  username        = module.postgres.user_names[var.db_provider_database_key]
+  password        = local.db_passwords[var.db_provider_database_key]
   sslmode         = var.postgresql_sslmode
   connect_timeout = 15
   superuser       = false

@@ -1,12 +1,16 @@
 resource "google_compute_instance" "this" {
-  project      = var.project_id
-  name         = var.name
-  zone         = var.zone
-  machine_type = var.machine_type
-  tags         = var.tags
-  labels       = var.labels
+  project             = var.project_id
+  name                = var.name
+  zone                = var.zone
+  machine_type        = var.machine_type
+  tags                = var.tags
+  labels              = var.labels
+  metadata            = var.metadata
+  deletion_protection = var.deletion_protection
 
   boot_disk {
+    auto_delete = var.boot_disk_auto_delete
+
     initialize_params {
       # Image is passed as a self link so it can come from a different project.
       image = var.source_image
@@ -37,6 +41,13 @@ resource "google_compute_instance" "this" {
     enable_secure_boot          = true
     enable_vtpm                 = true
     enable_integrity_monitoring = true
+  }
+
+  scheduling {
+    automatic_restart   = var.automatic_restart
+    on_host_maintenance = var.on_host_maintenance
+    preemptible         = var.preemptible
+    provisioning_model  = var.provisioning_model
   }
 
   lifecycle {
