@@ -4,9 +4,6 @@ locals {
   network_project_id = coalesce(var.network_project_id, var.project_id)
   vm_image_is_set    = var.vm_image_name != null || var.vm_image_family != null
 
-  # Google IAM expects group principals in this exact format.
-  existing_group_member = var.existing_group_email == null ? null : "group:${var.existing_group_email}"
-
   # Uses provided database passwords when set, otherwise generated passwords.
   db_passwords = {
     for key, database in var.db_databases :
@@ -47,19 +44,6 @@ locals {
       force_destroy              = false
     }
   }
-
-  # Expands the selected bucket IAM roles across every bucket in local.buckets.
-  existing_group_bucket_iam = {
-    for binding in flatten([
-      for bucket_key, bucket in local.buckets : [
-        for role in var.existing_group_bucket_roles : {
-          key    = "${bucket_key}-${role}"
-          bucket = bucket.name
-          role   = role
-        }
-      ]
-    ]) : binding.key => binding
-  }
 }
 
 resource "random_password" "db_database" {
@@ -80,7 +64,11 @@ resource "google_secret_manager_secret" "db_password" {
   secret_id = local.db_secret_ids[each.key]
 
   replication {
-    auto {}
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
   }
 }
 
@@ -91,45 +79,28 @@ resource "google_secret_manager_secret_version" "db_password" {
   secret_data = local.db_passwords[each.key]
 }
 
-# Optional project-level access for an existing Google Group.
-# Leave existing_group_email or existing_group_project_roles empty to skip this.
-resource "google_project_iam_member" "existing_group" {
-  for_each = local.existing_group_member == null ? toset([]) : var.existing_group_project_roles
+resource "google_secret_manager_secret" "additional" {
+  for_each = var.secret_manager_secrets
 
-  project = var.project_id
-  role    = each.value
-  member  = local.existing_group_member
+  project   = var.project_id
+  secret_id = each.value.secret_id
+  labels    = each.value.labels
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
 }
 
-# Optional bucket-level access for the same existing Google Group on all buckets.
-resource "google_storage_bucket_iam_member" "existing_group" {
-  for_each = local.existing_group_member == null ? {} : local.existing_group_bucket_iam
+resource "google_secret_manager_secret_version" "additional" {
+  for_each = var.secret_manager_secrets
 
-  bucket = each.value.bucket
-  role   = each.value.role
-  member = local.existing_group_member
-
-  depends_on = [module.buckets]
+  secret      = google_secret_manager_secret.additional[each.key].id
+  secret_data = each.value.secret_data
 }
-
-# Cloud SQL private IP requires a reserved peering range for Service Networking.
-# Network ID is provided directly as a variable to avoid requiring compute.networks.get
-# permission on the Shared VPC host project.
-# resource "google_compute_global_address" "private_service_access" {
-#   project       = local.network_project_id
-#   name          = "${var.db_instance_name}-private-service-access"
-#   purpose       = "VPC_PEERING"
-#   address_type  = "INTERNAL"
-#   prefix_length = 16
-#   network       = var.private_network_id
-# }
-
-# Creates the private services access connection used by Cloud SQL.
-# resource "google_service_networking_connection" "private_service_access" {
-#   network                 = var.private_network_id
-#   service                 = "servicenetworking.googleapis.com"
-#   reserved_peering_ranges = [google_compute_global_address.private_service_access.name]
-# }
 
 # Creates the three regional GCS buckets using the shared bucket module.
 module "buckets" {
@@ -199,7 +170,6 @@ module "postgres" {
   enable_public_ip    = var.enable_public_ip
   authorized_networks = var.authorized_networks
 
-  # depends_on = [google_service_networking_connection.private_service_access]
 }
 
 # PostGIS is a database extension, so it is managed with the PostgreSQL provider.

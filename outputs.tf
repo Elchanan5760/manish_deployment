@@ -33,6 +33,11 @@ output "database_password_secret_ids" {
   value       = { for key, secret in google_secret_manager_secret.db_password : key => secret.secret_id }
 }
 
+output "additional_secret_ids" {
+  description = "Secret Manager secret IDs for additional secrets by key."
+  value       = { for key, secret in google_secret_manager_secret.additional : key => secret.secret_id }
+}
+
 output "database_passwords" {
   description = "Generated or provided Cloud SQL database passwords by key."
   value       = local.db_passwords

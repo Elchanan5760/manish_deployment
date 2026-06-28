@@ -18,11 +18,12 @@ db_databases = {
   }
 }
 
-existing_group_email = "existing-group@example.com"
-existing_group_project_roles = [
-  "roles/compute.viewer",
-  "roles/cloudsql.client"
-]
-existing_group_bucket_roles = [
-  "roles/storage.objectViewer"
-]
+secret_manager_secrets = {
+  app_config = {
+    secret_id   = "app-config"
+    secret_data = "replace-with-secret-value"
+    labels = {
+      app = "manish"
+    }
+  }
+}

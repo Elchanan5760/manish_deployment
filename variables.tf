@@ -68,6 +68,16 @@ variable "db_provider_database_key" {
   }
 }
 
+variable "secret_manager_secrets" {
+  description = "Additional Secret Manager secrets to create. Secret values are marked sensitive by the provider and are stored in Terraform state."
+  type = map(object({
+    secret_id   = string
+    secret_data = string
+    labels      = optional(map(string), {})
+  }))
+  default = {}
+}
+
 variable "db_tier" {
   description = "Cloud SQL machine tier."
   type        = string
@@ -238,22 +248,4 @@ variable "vm_provisioning_model" {
   description = "VM provisioning model."
   type        = string
   default     = "STANDARD"
-}
-
-variable "existing_group_email" {
-  description = "Existing Google Group email to grant IAM access to. Example: platform-team@example.com."
-  type        = string
-  default     = null
-}
-
-variable "existing_group_project_roles" {
-  description = "Project-level IAM roles to grant to existing_group_email."
-  type        = set(string)
-  default     = []
-}
-
-variable "existing_group_bucket_roles" {
-  description = "Bucket-level IAM roles to grant to existing_group_email on all buckets created by this Terraform."
-  type        = set(string)
-  default     = []
 }
